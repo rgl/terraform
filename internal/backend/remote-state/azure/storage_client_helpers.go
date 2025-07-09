@@ -6,6 +6,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/go-azure-helpers/lang/pointer"
@@ -158,6 +159,10 @@ func populateAccountDetails(accountId commonids.StorageAccountId, account storag
 // naiveStorageAccountBlobBaseURL naively construct the storage account blob endpoint URL instead of
 // learning from the storage account response. This can be incorrect if private dns zone is used.
 func naiveStorageAccountBlobBaseURL(e environments.Environment, accountName string) (string, error) {
+	// e.g. http://storage:10000/devstoreaccount1
+	if blobEndpoint := os.Getenv("AZURE_STORAGE_SERVICE_ENDPOINT"); blobEndpoint != "" {
+		return blobEndpoint, nil
+	}
 	pDomainSuffix, ok := e.Storage.DomainSuffix()
 	if !ok {
 		return "", fmt.Errorf("no storage domain suffix defined for environment: %s", e.Name)
